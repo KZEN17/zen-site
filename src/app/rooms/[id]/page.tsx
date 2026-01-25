@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { rooms } from "@/data/siteData";
+import { rooms, siteConfig } from "@/data/siteData";
 import ImageCarousel from "@/components/ImageCarousel";
 import { notFound } from "next/navigation";
 
@@ -135,10 +135,11 @@ export default async function RoomDetailsPage({ params }: PageProps) {
                 Contact us for availability and rates.
               </p>
               <Link
-                href="/#contact"
+                href={siteConfig.social.facebook}
+                target="blank"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-white font-medium rounded hover:bg-amber-600 transition-colors"
               >
-                Inquire Now
+                Book Now
                 <svg
                   className="w-4 h-4"
                   fill="none"

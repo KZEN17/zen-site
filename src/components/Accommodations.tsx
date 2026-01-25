@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import ImageCarousel from "./ImageCarousel";
-import { rooms } from "@/data/siteData";
+import { rooms, siteConfig } from "@/data/siteData";
 
 export default function Accommodations() {
   return (
@@ -21,8 +21,8 @@ export default function Accommodations() {
             Our Accommodations
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            Choose from our comfortable rooms, perfect for couples, families, or groups.
-            Each room offers a peaceful retreat with beach access.
+            Choose from our comfortable rooms, perfect for couples, families, or
+            groups. Each room offers a peaceful retreat with beach access.
           </p>
         </div>
 
@@ -49,8 +49,18 @@ export default function Accommodations() {
                     {room.name}
                   </h3>
                   <span className="flex items-center gap-2 text-gray-600">
-                    <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    <svg
+                      className="w-5 h-5 text-amber-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
                     </svg>
                     {room.capacity}
                   </span>
@@ -58,31 +68,53 @@ export default function Accommodations() {
 
                 <ul className="space-y-2 mb-4">
                   {room.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-gray-600">
-                      <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <li
+                      key={idx}
+                      className="flex items-center gap-2 text-gray-600"
+                    >
+                      <svg
+                        className="w-4 h-4 text-amber-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                       {feature}
                     </li>
                   ))}
                 </ul>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between gap-4">
+                  <a
+                    target="blank"
+                    href={siteConfig.social.facebook}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-white font-medium rounded hover:bg-amber-600 transition-colors"
+                  >
+                    Book Now
+                  </a>
                   <Link
                     href={`/rooms/${room.id}`}
                     className="inline-flex items-center gap-2 text-amber-500 font-medium hover:text-amber-600 transition-colors group/link"
                   >
                     More Details
-                    <svg className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    <svg
+                      className="w-4 h-4 group-hover/link:translate-x-1 transition-transform"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 8l4 4m0 0l-4 4m4-4H3"
+                      />
                     </svg>
                   </Link>
-                  <a
-                    href="#contact"
-                    className="inline-flex items-center gap-2 text-gray-500 font-medium hover:text-gray-700 transition-colors"
-                  >
-                    Inquire Now
-                  </a>
                 </div>
               </div>
             </div>
@@ -95,7 +127,8 @@ export default function Accommodations() {
             Need More Information?
           </h3>
           <p className="text-gray-600 mb-6">
-            Contact us for availability, special rates for longer stays, or custom arrangements.
+            Contact us for availability, special rates for longer stays, or
+            custom arrangements.
           </p>
           <a
             href="#contact"
