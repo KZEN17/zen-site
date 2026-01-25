@@ -362,7 +362,6 @@ export const activityPackages: ActivityPackage[] = [
     images: [
       "/images/package-2-1.jpeg",
       "/images/package-2-2.jpeg",
-      "/images/package-2-3.jpeg",
       "/images/package-2-4.jpeg",
       "/images/package-2-5.jpeg",
       "/images/package-2-6.jpeg",
