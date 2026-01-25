@@ -1,48 +1,26 @@
 "use client";
 
-import { useState } from "react";
 import ImageCarousel from "./ImageCarousel";
 import { activityPackages, activities } from "@/data/siteData";
 
 export default function Activities() {
-  const [expandedImage, setExpandedImage] = useState<{
-    images: string[];
-    currentIndex: number;
-  } | null>(null);
-
-  const handleImageClick = (images: string[], index: number) => {
-    setExpandedImage({ images, currentIndex: index });
-  };
-
-  const goPrevious = () => {
-    if (!expandedImage) return;
-    setExpandedImage({
-      ...expandedImage,
-      currentIndex:
-        expandedImage.currentIndex === 0
-          ? expandedImage.images.length - 1
-          : expandedImage.currentIndex - 1,
-    });
-  };
-
-  const goNext = () => {
-    if (!expandedImage) return;
-    setExpandedImage({
-      ...expandedImage,
-      currentIndex:
-        expandedImage.currentIndex === expandedImage.images.length - 1
-          ? 0
-          : expandedImage.currentIndex + 1,
-    });
-  };
-
   return (
     <section
       id="activities"
-      className="py-24 bg-gray-900 text-white relative overflow-visible"
+      className="py-24 bg-gray-900 text-white relative overflow-hidden"
     >
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
+        {/* Section Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-4 mb-4">
             <span className="w-12 h-px bg-amber-500" />
@@ -61,33 +39,33 @@ export default function Activities() {
           </p>
         </div>
 
-        {/* Packages */}
+        {/* Packages Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           {activityPackages.map((pkg) => (
             <div
               key={pkg.id}
-              className="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700 hover:border-amber-500/50 transition-all duration-500 flex flex-col h-full"
+              className="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-700 hover:border-amber-500/50 transition-all duration-500 flex flex-col h-full"
             >
-              {/* Carousel */}
-              <div
-                className="relative cursor-pointer"
-                onClick={() => handleImageClick(pkg.images, 0)}
-              >
+              {/* Image Carousel */}
+              <div className="relative cursor-pointer">
                 <ImageCarousel
                   images={pkg.images}
                   alt={pkg.name}
                   aspectRatio="video"
                 />
-                <div className="absolute top-4 left-4 bg-amber-500 text-white px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wider pointer-events-none">
+                {/* Package Name Badge */}
+                <div className="absolute top-4 left-4 bg-amber-500 text-white px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wider z-20 pointer-events-none">
                   {pkg.name}
                 </div>
-                <div className="absolute top-4 right-4 bg-white text-gray-900 px-4 py-2 rounded-full font-bold pointer-events-none">
+                {/* Price Badge */}
+                <div className="absolute top-4 right-4 bg-white text-gray-900 px-4 py-2 rounded-full font-bold z-20 pointer-events-none">
                   {pkg.price > 0 ? `₱${pkg.price.toLocaleString()}` : "Inquire"}
                 </div>
               </div>
 
               {/* Content */}
               <div className="p-8 flex flex-col flex-grow">
+                {/* Price & Pax Info */}
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-2xl font-bold text-amber-500">
                     {pkg.price > 0
@@ -97,6 +75,7 @@ export default function Activities() {
                   <span className="text-gray-400 text-sm">{pkg.pax}</span>
                 </div>
 
+                {/* Activities List */}
                 <div className="mb-6 flex-grow">
                   <h4 className="text-sm uppercase tracking-wider text-amber-500 mb-3">
                     Included Activities
@@ -123,11 +102,25 @@ export default function Activities() {
                   </ul>
                 </div>
 
+                {/* CTA */}
                 <a
                   href="#contact"
-                  className="inline-flex items-center justify-center w-full gap-2 px-6 py-4 bg-amber-500 text-white font-medium uppercase tracking-wider text-sm hover:bg-amber-600 transition-all duration-300 rounded mt-auto"
+                  className="inline-flex items-center justify-center w-full gap-2 px-6 py-4 bg-amber-500 text-white font-medium uppercase tracking-wider text-sm hover:bg-amber-600 transition-all duration-300 rounded group/btn mt-auto"
                 >
                   Book This Package
+                  <svg
+                    className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                    />
+                  </svg>
                 </a>
               </div>
             </div>
@@ -143,19 +136,24 @@ export default function Activities() {
             {activities.map((activity) => (
               <div
                 key={activity.id}
-                className="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700 hover:border-amber-500/50 transition-all duration-500 cursor-pointer"
-                onClick={() => handleImageClick(activity.images, 0)}
+                className="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-700 hover:border-amber-500/50 transition-all duration-500"
               >
-                <ImageCarousel
-                  images={activity.images}
-                  alt={activity.name}
-                  aspectRatio="video"
-                />
-                <div className="absolute top-4 right-4 bg-amber-500 text-white px-4 py-2 rounded-full font-bold pointer-events-none">
-                  {activity.price > 0
-                    ? `₱${activity.price.toLocaleString()}`
-                    : "Inquire"}
+                {/* Image Carousel */}
+                <div className="relative cursor-pointer">
+                  <ImageCarousel
+                    images={activity.images}
+                    alt={activity.name}
+                    aspectRatio="video"
+                  />
+                  {/* Price Badge */}
+                  <div className="absolute top-4 right-4 bg-amber-500 text-white px-4 py-2 rounded-full font-bold z-20 pointer-events-none">
+                    {activity.price > 0
+                      ? `₱${activity.price.toLocaleString()}`
+                      : "Inquire"}
+                  </div>
                 </div>
+
+                {/* Content */}
                 <div className="p-6">
                   <h4 className="text-xl font-serif font-bold mb-2">
                     {activity.name}
@@ -166,9 +164,22 @@ export default function Activities() {
                   </p>
                   <a
                     href="#contact"
-                    className="inline-flex items-center gap-2 text-amber-500 font-medium hover:text-amber-400 transition-colors"
+                    className="inline-flex items-center gap-2 text-amber-500 font-medium hover:text-amber-400 transition-colors group/link"
                   >
                     Book Now
+                    <svg
+                      className="w-4 h-4 group-hover/link:translate-x-1 transition-transform"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 8l4 4m0 0l-4 4m4-4H3"
+                      />
+                    </svg>
                   </a>
                 </div>
               </div>
@@ -176,130 +187,6 @@ export default function Activities() {
           </div>
         </div>
       </div>
-
-      {/* Fullscreen Lightbox */}
-      {expandedImage && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-4"
-          onClick={() => setExpandedImage(null)}
-        >
-          {/* Close Button */}
-          <button
-            className="absolute top-6 right-6 text-white hover:text-amber-500 z-50 p-2"
-            onClick={() => setExpandedImage(null)}
-          >
-            <svg
-              className="w-8 h-8"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-
-          {/* Previous */}
-          {expandedImage.images.length > 1 && (
-            <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-amber-500 z-50 p-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                goPrevious();
-              }}
-            >
-              <svg
-                className="w-12 h-12"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-          )}
-
-          {/* Next */}
-          {expandedImage.images.length > 1 && (
-            <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-amber-500 z-50 p-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                goNext();
-              }}
-            >
-              <svg
-                className="w-12 h-12"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          )}
-
-          {/* Main Image */}
-          <div
-            className="relative w-full max-w-5xl h-[85vh] mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ImageCarousel
-              images={[expandedImage.images[expandedImage.currentIndex]]}
-              alt={`Expanded image`}
-              aspectRatio="video"
-              className="!cursor-auto"
-            />
-          </div>
-
-          {/* Counter */}
-          {expandedImage.images.length > 1 && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white text-sm">
-              {expandedImage.currentIndex + 1} / {expandedImage.images.length}
-            </div>
-          )}
-
-          {/* Thumbnail Strip */}
-          {expandedImage.images.length > 1 && (
-            <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-2 max-w-[90vw] overflow-x-auto py-2 px-4">
-              {expandedImage.images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setExpandedImage({ ...expandedImage, currentIndex: idx });
-                  }}
-                  className={`relative w-16 h-16 flex-shrink-0 rounded overflow-hidden transition-all duration-300 ${
-                    idx === expandedImage.currentIndex
-                      ? "ring-2 ring-amber-500 opacity-100"
-                      : "opacity-50 hover:opacity-80"
-                  }`}
-                >
-                  <img
-                    src={img}
-                    alt={`Thumbnail ${idx + 1}`}
-                    className="object-cover w-full h-full"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
     </section>
   );
 }
