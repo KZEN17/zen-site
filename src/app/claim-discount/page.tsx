@@ -29,16 +29,8 @@ export default function ClaimDiscountPage() {
   };
 
   const handleBookNow = () => {
-    // Create the message with discount code
-    const message = encodeURIComponent(
-      `Hi! I'd like to book${roomName ? ` ${roomName}` : ""} at ZEN House Calayo.\n\nI have a 10% discount code from your website: ${discountCode}`
-    );
-
-    // Open Messenger with the pre-filled message
-    window.open(
-      `https://m.me/100075945187126?text=${message}`,
-      "_blank"
-    );
+    // Open existing Messenger conversation (without ?text= to avoid creating new thread)
+    window.location.href = "https://m.me/100075945187126";
   };
 
   const handleCopyCode = () => {
@@ -122,45 +114,54 @@ export default function ClaimDiscountPage() {
               </p>
             ) : (
               <div className="space-y-4">
-                {/* Copy code button */}
-                <button
-                  onClick={handleCopyCode}
-                  className="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-gray-700 font-medium hover:border-amber-500 hover:text-amber-600 transition-colors flex items-center justify-center gap-2"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                {/* Step 1: Copy code */}
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                  <p className="text-amber-800 text-sm font-medium mb-2 text-center">
+                    Step 1: Copy your discount code
+                  </p>
+                  <button
+                    onClick={handleCopyCode}
+                    className="w-full py-3 px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                  Copy Discount Code
-                </button>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Copy Code: {discountCode}
+                  </button>
+                </div>
 
-                {/* Book now button */}
-                <button
-                  onClick={handleBookNow}
-                  className="w-full py-4 px-6 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-3 text-lg"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
+                {/* Step 2: Book on Messenger */}
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <p className="text-gray-600 text-sm font-medium mb-2 text-center">
+                    Step 2: Message us & paste your code
+                  </p>
+                  <button
+                    onClick={handleBookNow}
+                    className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
                   >
-                    <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 1.78.46 3.45 1.27 4.9L2 22l5.18-1.36c1.4.74 2.98 1.16 4.67 1.16h.01c5.5 0 9.99-4.49 9.99-10.02S17.5 2.04 12 2.04zm5.85 13.97c-.25.71-1.48 1.32-2.04 1.4-.51.08-1.15.11-1.86-.12-.43-.14-.98-.33-1.69-.65-2.98-1.29-4.92-4.32-5.07-4.52-.15-.21-1.22-1.63-1.22-3.11 0-1.48.77-2.21 1.04-2.51.27-.3.59-.37.79-.37.2 0 .4 0 .57.01.18.01.43-.07.67.51.25.59.84 2.06.91 2.21.08.15.13.33.03.53-.1.2-.15.32-.3.5-.15.17-.31.38-.44.51-.15.15-.3.31-.13.61.18.3.79 1.31 1.7 2.12 1.17 1.04 2.15 1.37 2.46 1.52.3.15.48.13.66-.08.18-.21.76-.89.97-1.19.2-.3.4-.25.68-.15.27.1 1.74.82 2.04.97.3.15.5.22.57.35.08.12.08.71-.17 1.42z" />
-                  </svg>
-                  Book Now on Messenger
-                </button>
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 1.78.46 3.45 1.27 4.9L2 22l5.18-1.36c1.4.74 2.98 1.16 4.67 1.16h.01c5.5 0 9.99-4.49 9.99-10.02S17.5 2.04 12 2.04zm5.85 13.97c-.25.71-1.48 1.32-2.04 1.4-.51.08-1.15.11-1.86-.12-.43-.14-.98-.33-1.69-.65-2.98-1.29-4.92-4.32-5.07-4.52-.15-.21-1.22-1.63-1.22-3.11 0-1.48.77-2.21 1.04-2.51.27-.3.59-.37.79-.37.2 0 .4 0 .57.01.18.01.43-.07.67.51.25.59.84 2.06.91 2.21.08.15.13.33.03.53-.1.2-.15.32-.3.5-.15.17-.31.38-.44.51-.15.15-.3.31-.13.61.18.3.79 1.31 1.7 2.12 1.17 1.04 2.15 1.37 2.46 1.52.3.15.48.13.66-.08.18-.21.76-.89.97-1.19.2-.3.4-.25.68-.15.27.1 1.74.82 2.04.97.3.15.5.22.57.35.08.12.08.71-.17 1.42z" />
+                    </svg>
+                    Open Messenger
+                  </button>
+                </div>
 
-                <p className="text-center text-gray-500 text-sm">
-                  Your discount code will be automatically included in the
-                  message
+                <p className="text-center text-gray-400 text-xs">
+                  Mention your code when booking to get your {siteConfig.discountPercentage}% discount!
                 </p>
               </div>
             )}
