@@ -29,8 +29,12 @@ export default function ClaimDiscountPage() {
   };
 
   const handleBookNow = () => {
-    // Open existing Messenger conversation (without ?text= to avoid creating new thread)
-    window.location.href = "https://m.me/100075945187126";
+    // Create message with discount code
+    const message = encodeURIComponent(
+      `Hi! I'd like to book${roomName ? ` ${roomName}` : ""} at ZEN House Calayo.\n\nI have a 10% discount code from your website: ${discountCode}`
+    );
+    // Open Messenger with pre-filled message (note: this creates a new chat thread - Facebook limitation)
+    window.location.href = `https://m.me/100075945187126?text=${message}`;
   };
 
   const handleCopyCode = () => {
