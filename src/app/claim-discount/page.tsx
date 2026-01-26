@@ -10,9 +10,7 @@ export default function ClaimDiscountPage() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [roomName, setRoomName] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-
-  // Messenger URL without pre-filled text (more reliable on mobile)
-  const messengerUrl = "https://m.me/100075945187126";
+  const [messengerUrl, setMessengerUrl] = useState("https://m.me/100075945187126");
 
   useEffect(() => {
     // Get a random discount code
@@ -27,6 +25,16 @@ export default function ClaimDiscountPage() {
       setRoomName(room);
     }
   }, []);
+
+  // Generate messenger URL with pre-filled message
+  useEffect(() => {
+    if (discountCode) {
+      const message = encodeURIComponent(
+        `Hi! I'd like to book${roomName ? ` ${roomName}` : ""} at ZEN House Calayo.\n\nI have a 10% discount code from your website: ${discountCode}`
+      );
+      setMessengerUrl(`https://m.me/100075945187126?text=${message}`);
+    }
+  }, [discountCode, roomName]);
 
   const handleReveal = () => {
     setIsRevealed(true);
