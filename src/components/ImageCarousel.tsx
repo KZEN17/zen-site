@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import PlaceholderImage from "./PlaceholderImage";
 
 interface ImageCarouselProps {
@@ -19,7 +20,13 @@ export default function ImageCarousel({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Track if component is mounted (for portal)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const aspectClasses = {
     square: "aspect-square",
@@ -176,10 +183,10 @@ export default function ImageCarousel({
         )}
       </div>
 
-      {/* Lightbox Modal */}
-      {isLightboxOpen && (
+      {/* Lightbox Modal - rendered via portal to escape stacking contexts */}
+      {mounted && isLightboxOpen && createPortal(
         <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+          className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
           onClick={closeLightbox}
         >
           {/* Close Button */}
@@ -272,7 +279,8 @@ export default function ImageCarousel({
               ))}
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

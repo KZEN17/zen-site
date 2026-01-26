@@ -7,7 +7,7 @@ export default function Activities() {
   return (
     <section
       id="activities"
-      className="py-24 bg-gray-900 text-white relative overflow-hidden"
+      className="py-24 bg-gray-900 text-white relative"
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
@@ -44,10 +44,10 @@ export default function Activities() {
           {activityPackages.map((pkg) => (
             <div
               key={pkg.id}
-              className="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-700 hover:border-amber-500/50 transition-all duration-500 flex flex-col h-full"
+              className="relative bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 hover:border-amber-500/50 transition-all duration-500 flex flex-col h-full"
             >
               {/* Image Carousel */}
-              <div className="relative cursor-pointer">
+              <div className="relative">
                 <ImageCarousel
                   images={pkg.images}
                   alt={pkg.name}
@@ -136,10 +136,10 @@ export default function Activities() {
             {activities.map((activity) => (
               <div
                 key={activity.id}
-                className="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-700 hover:border-amber-500/50 transition-all duration-500"
+                className="relative bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 hover:border-amber-500/50 transition-all duration-500"
               >
                 {/* Image Carousel */}
-                <div className="relative cursor-pointer">
+                <div className="relative">
                   <ImageCarousel
                     images={activity.images}
                     alt={activity.name}
