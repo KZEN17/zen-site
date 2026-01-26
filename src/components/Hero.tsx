@@ -1,12 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function Hero() {
   const [isLoaded, setIsLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     setIsLoaded(true);
+
+    // iOS Safari needs explicit play() call
+    const video = videoRef.current;
+    if (video) {
+      video.play().catch(() => {
+        // Autoplay was prevented, ignore silently
+      });
+    }
   }, []);
 
   return (
@@ -14,12 +23,13 @@ export default function Hero() {
       {/* Video Background */}
       <div className="absolute inset-0 z-0">
         <video
+          ref={videoRef}
           autoPlay
           muted
           loop
           playsInline
           className="w-full h-full object-cover"
-          poster="/images/hero-poster.jpg" // Placeholder poster image
+          poster="/images/hero-poster.jpg"
         >
           {/* Replace with your actual video file */}
           <source src="/videos/hero-video.mp4" type="video/mp4" />
