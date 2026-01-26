@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import ImageCarousel from "./ImageCarousel";
-import { rooms, siteConfig } from "@/data/siteData";
+import { rooms } from "@/data/siteData";
 
 export default function Accommodations() {
   return (
@@ -89,13 +89,12 @@ export default function Accommodations() {
                 </ul>
 
                 <div className="flex items-center justify-between gap-4">
-                  <a
-                    target="blank"
-                    href={siteConfig.social.facebook}
+                  <Link
+                    href={`/claim-discount?room=${encodeURIComponent(room.name)}`}
                     className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-white font-medium rounded hover:bg-amber-600 transition-colors"
                   >
                     Book Now
-                  </a>
+                  </Link>
                   <Link
                     href={`/rooms/${room.id}`}
                     className="inline-flex items-center gap-2 text-amber-500 font-medium hover:text-amber-600 transition-colors group/link"

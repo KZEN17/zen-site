@@ -16,6 +16,16 @@ export const siteConfig = {
     instagram:
       "https://www.instagram.com/explore/locations/106658485169841/zenhouse-calayo/",
   },
+  // Discount codes for website bookings - 10% off
+  // These codes help track bookings that came from the website
+  discountCodes: [
+    "ZENWEB10",
+    "ZENSITE10",
+    "BEACH10",
+    "CALAYO10",
+    "ZENHOUSE10",
+  ],
+  discountPercentage: 10,
 };
 
 export interface RoomRate {
