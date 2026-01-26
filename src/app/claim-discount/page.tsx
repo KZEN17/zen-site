@@ -46,30 +46,36 @@ export default function ClaimDiscountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
-        {/* Back to home */}
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 mb-8 transition-colors"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      {/* Fixed header for mobile navigation */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-          Back to ZEN House
-        </Link>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            <span className="text-sm font-medium">Back</span>
+          </Link>
+          <span className="text-white/60 text-sm font-medium">ZEN House Calayo</span>
+        </div>
+      </header>
 
-        {/* Main card */}
+      <div className="flex items-center justify-center min-h-screen p-4 pt-20">
+        <div className="w-full max-w-lg">
+          {/* Main card */}
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-center text-white">
@@ -173,6 +179,7 @@ export default function ClaimDiscountPage() {
           *Discount valid for direct bookings only. Cannot be combined with
           other offers.
         </p>
+        </div>
       </div>
     </div>
   );
