@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { rooms } from "@/data/siteData";
 import ImageCarousel from "@/components/ImageCarousel";
 import { notFound } from "next/navigation";
@@ -134,8 +133,8 @@ export default async function RoomDetailsPage({ params }: PageProps) {
               <p className="text-gray-600 mb-4">
                 Contact us for availability and rates.
               </p>
-              <Link
-                href={`/claim-discount?room=${encodeURIComponent(room.name)}`}
+              <a
+                href={`https://m.me/100075945187126?text=${encodeURIComponent(`Hi! I'd like to book ${room.name} at ZEN House Calayo.`)}`}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-white font-medium rounded hover:bg-amber-600 transition-colors"
               >
                 Book Now
@@ -152,7 +151,7 @@ export default async function RoomDetailsPage({ params }: PageProps) {
                     d="M17 8l4 4m0 0l-4 4m4-4H3"
                   />
                 </svg>
-              </Link>
+              </a>
             </div>
           </div>
         </div>

@@ -89,12 +89,12 @@ export default function Accommodations() {
                 </ul>
 
                 <div className="flex items-center justify-between gap-4">
-                  <Link
-                    href={`/claim-discount?room=${encodeURIComponent(room.name)}`}
+                  <a
+                    href={`https://m.me/100075945187126?text=${encodeURIComponent(`Hi! I'd like to book ${room.name} at ZEN House Calayo.`)}`}
                     className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-white font-medium rounded hover:bg-amber-600 transition-colors"
                   >
                     Book Now
-                  </Link>
+                  </a>
                   <Link
                     href={`/rooms/${room.id}`}
                     className="inline-flex items-center gap-2 text-amber-500 font-medium hover:text-amber-600 transition-colors group/link"
