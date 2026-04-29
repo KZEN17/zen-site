@@ -21,10 +21,16 @@ export default async function CalendarPage({ searchParams }: Props) {
   // Appwrite rows have non-plain prototypes — serialize before passing to Client Component
   const rooms: Room[] = JSON.parse(JSON.stringify(rawRooms))
   const bookings: Booking[] = JSON.parse(JSON.stringify(rawBookings))
+  const roomIds = new Set(rooms.map(room => room.$id))
+  const roomIdsByName = new Map(rooms.map(room => [room.name.trim().toLowerCase(), room.$id]))
 
   const bookingsByRoom = bookings.reduce<Record<string, Booking[]>>((acc, b) => {
-    if (!acc[b.room_id]) acc[b.room_id] = []
-    acc[b.room_id].push(b)
+    const roomKey = roomIds.has(b.room_id)
+      ? b.room_id
+      : roomIdsByName.get(b.room_name.trim().toLowerCase()) ?? b.room_id
+
+    if (!acc[roomKey]) acc[roomKey] = []
+    acc[roomKey].push(b)
     return acc
   }, {})
 

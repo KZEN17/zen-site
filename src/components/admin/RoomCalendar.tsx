@@ -2,7 +2,7 @@
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/style.css'
 import type { Booking } from '@/types/admin'
-import { getBookedDatesForRoom, getCheckInDates, getCheckOutDates } from '@/lib/utils/dates'
+import { getBookedDatesForRoom, getBookingForDate } from '@/lib/utils/dates'
 import { formatPeso } from '@/lib/utils/formatters'
 
 interface Props {
@@ -13,17 +13,6 @@ interface Props {
 
 export default function RoomCalendar({ roomName, bookings, month }: Props) {
   const bookedDates = getBookedDatesForRoom(bookings)
-  const checkInDates = getCheckInDates(bookings)
-  const checkOutDates = getCheckOutDates(bookings)
-
-  function getDayBooking(date: Date): Booking | undefined {
-    return bookings.find(b => {
-      if (b.payment_status === 'cancelled') return false
-      const start = new Date(b.check_in + 'T00:00:00')
-      const end = new Date(b.check_out + 'T00:00:00')
-      return date >= start && date <= end
-    })
-  }
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
@@ -32,27 +21,22 @@ export default function RoomCalendar({ roomName, bookings, month }: Props) {
         month={month}
         disableNavigation
         modifiers={{
+          available: date =>
+            date.getFullYear() === month.getFullYear() &&
+            date.getMonth() === month.getMonth() &&
+            !getBookingForDate(date, bookings),
           booked: bookedDates,
-          checkIn: checkInDates,
-          checkOut: checkOutDates,
         }}
         modifiersClassNames={{
+          available: 'rdp-day-available',
           booked: 'rdp-day-booked',
-          checkIn: 'rdp-day-checkin',
-          checkOut: 'rdp-day-checkout',
         }}
         components={{
           Day: ({ day, ...props }) => {
-            const booking = getDayBooking(day.date)
+            const booking = getBookingForDate(day.date, bookings)
             return (
               <td {...props}>
-                <div
-                  title={
-                    booking
-                      ? `${booking.guest_name} · ${formatPeso(booking.total_amount)}`
-                      : undefined
-                  }
-                >
+                <div title={booking ? `${booking.guest_name} - ${formatPeso(booking.total_amount)}` : undefined}>
                   {day.date.getDate()}
                 </div>
               </td>
@@ -64,9 +48,10 @@ export default function RoomCalendar({ roomName, bookings, month }: Props) {
         }}
       />
       <style>{`
-        .rdp-day-booked { background-color: #fef3c7; color: #92400e; border-radius: 4px; }
-        .rdp-day-checkin { background-color: #d1fae5 !important; color: #065f46 !important; font-weight: 700; }
-        .rdp-day-checkout { background-color: #dbeafe !important; color: #1e40af !important; font-weight: 700; }
+        .rdp-day-available { background-color: #dcfce7; color: #166534; border-radius: 6px; }
+        .rdp-day-booked { background-color: #fecaca; color: #991b1b; border-radius: 6px; font-weight: 600; }
+        .rdp-day-available.rdp-today { color: #166534; box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.18); }
+        .rdp-day-booked.rdp-today { color: #991b1b; box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.18); }
       `}</style>
     </div>
   )
