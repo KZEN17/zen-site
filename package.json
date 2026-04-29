@@ -6,22 +6,30 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "tsx src/scripts/seed-rooms.ts",
+    "seed:schedule": "tsx src/scripts/seed-schedule.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
+    "date-fns": "^4.1.0",
     "next": "16.1.1",
+    "node-appwrite": "^24.0.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-day-picker": "^9.14.0",
+    "react-dom": "19.2.3",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
