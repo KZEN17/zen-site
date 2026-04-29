@@ -1,4 +1,4 @@
-import { eachDayOfInterval, parseISO, format, getDaysInMonth } from 'date-fns'
+import { eachDayOfInterval, format, getDaysInMonth, parseISO, subDays } from 'date-fns'
 import type { Booking } from '@/types/admin'
 
 export function getBookedDatesForRoom(bookings: Booking[]): Date[] {
@@ -8,7 +8,9 @@ export function getBookedDatesForRoom(bookings: Booking[]): Date[] {
     try {
       const start = parseISO(booking.check_in)
       const end = parseISO(booking.check_out)
-      dates.push(...eachDayOfInterval({ start, end }))
+      const lastBookedDate = subDays(end, 1)
+      if (lastBookedDate < start) continue
+      dates.push(...eachDayOfInterval({ start, end: lastBookedDate }))
     } catch {
       // skip malformed dates
     }
@@ -42,7 +44,7 @@ export function getBookingForDate(date: Date, bookings: Booking[]): Booking | un
     try {
       const start = parseISO(b.check_in)
       const end = parseISO(b.check_out)
-      return date >= start && date <= end
+      return date >= start && date < end
     } catch {
       return false
     }

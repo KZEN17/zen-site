@@ -16,6 +16,17 @@ export async function getRoomById(id: string): Promise<Room> {
   return row as unknown as Room
 }
 
+export async function getRoomBySlug(slug: string): Promise<Room | null> {
+  const { tables, databaseId } = createAdminClient()
+  const res = await tables.listRows(databaseId, TABLES.rooms, [
+    Query.equal('slug', slug),
+    Query.limit(1),
+  ])
+
+  if (res.rows.length === 0) return null
+  return res.rows[0] as unknown as Room
+}
+
 export async function getRoomRates(roomId: string): Promise<RoomRate[]> {
   const { tables, databaseId } = createAdminClient()
   const res = await tables.listRows(databaseId, TABLES.roomRates, [

@@ -1,5 +1,6 @@
 import { rooms } from "@/data/siteData";
 import ImageCarousel from "@/components/ImageCarousel";
+import RoomAvailabilityCalendar from "@/components/RoomAvailabilityCalendar";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
@@ -123,6 +124,10 @@ export default async function RoomDetailsPage({ params }: PageProps) {
                   <p className="text-gray-500 text-xs mt-1">per night</p>
                 </div>
               ))}
+            </div>
+
+            <div className="mb-8">
+              <RoomAvailabilityCalendar roomSlug={room.id} roomName={room.name} />
             </div>
 
             {/* Contact CTA */}

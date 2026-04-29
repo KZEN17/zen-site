@@ -1,6 +1,7 @@
-import { getRooms } from '@/lib/db/rooms'
-import { getBookingsForCalendar } from '@/lib/db/bookings'
 import AllRoomsCalendar from '@/components/admin/AllRoomsCalendar'
+import { getBookingsForCalendar } from '@/lib/db/bookings'
+import { getRooms } from '@/lib/db/rooms'
+import { groupBookingsByRoom } from '@/lib/utils/availability'
 import type { Booking, Room } from '@/types/admin'
 
 interface Props {
@@ -10,37 +11,17 @@ interface Props {
 export default async function CalendarPage({ searchParams }: Props) {
   const params = await searchParams
   const now = new Date()
-  const year = parseInt(params.year ?? String(now.getFullYear()))
-  const month = parseInt(params.month ?? String(now.getMonth() + 1))
+  const year = parseInt(params.year ?? String(now.getFullYear()), 10)
+  const month = parseInt(params.month ?? String(now.getMonth() + 1), 10)
 
   const [rawRooms, rawBookings] = await Promise.all([
     getRooms(),
     getBookingsForCalendar(year, month),
   ])
 
-  // Appwrite rows have non-plain prototypes — serialize before passing to Client Component
   const rooms: Room[] = JSON.parse(JSON.stringify(rawRooms))
   const bookings: Booking[] = JSON.parse(JSON.stringify(rawBookings))
-  const roomIds = new Set(rooms.map(room => room.$id))
-  const roomIdsByName = new Map(rooms.map(room => [room.name.trim().toLowerCase(), room.$id]))
-
-  const bookingsByRoom = bookings.reduce<Record<string, Booking[]>>((acc, b) => {
-    // Primary room
-    const roomKey = roomIds.has(b.room_id)
-      ? b.room_id
-      : roomIdsByName.get(b.room_name.trim().toLowerCase()) ?? b.room_id
-    if (!acc[roomKey]) acc[roomKey] = []
-    acc[roomKey].push(b)
-
-    // Aux rooms — combo bookings block all constituent rooms
-    if (b.aux_room_ids) {
-      for (const id of b.aux_room_ids.split(',').map(s => s.trim()).filter(Boolean)) {
-        if (!acc[id]) acc[id] = []
-        acc[id].push(b)
-      }
-    }
-    return acc
-  }, {})
+  const bookingsByRoom = groupBookingsByRoom(rooms, bookings)
 
   return (
     <div className="space-y-6">
