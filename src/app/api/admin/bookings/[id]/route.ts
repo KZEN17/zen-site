@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getBookingById, updateBooking, cancelBooking, checkOverlap } from '@/lib/db/bookings'
+import { getBookingById, updateBooking, deleteBooking, checkOverlap } from '@/lib/db/bookings'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -42,7 +42,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    await cancelBooking(id)
+    await deleteBooking(id)
     return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 })

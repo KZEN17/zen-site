@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
-    const { room_id, check_in, check_out } = data
+    const { room_id, check_in, check_out, aux_room_ids } = data
 
     if (!room_id || !check_in || !check_out || !data.guest_name || data.total_amount == null) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -33,12 +33,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Check-out must be after check-in' }, { status: 400 })
     }
 
-    const hasOverlap = await checkOverlap(room_id, check_in, check_out)
-    if (hasOverlap) {
+    // Check overlap for primary room
+    const primaryOverlap = await checkOverlap(room_id, check_in, check_out)
+    if (primaryOverlap) {
       return NextResponse.json(
-        { error: 'Room is already booked for these dates' },
+        { error: 'One or more rooms in this combination are already booked for these dates' },
         { status: 409 }
       )
+    }
+
+    // Check overlap for all aux rooms in a combo
+    if (aux_room_ids) {
+      const auxIds = (aux_room_ids as string).split(',').map((id: string) => id.trim()).filter(Boolean)
+      for (const auxId of auxIds) {
+        const hasOverlap = await checkOverlap(auxId, check_in, check_out)
+        if (hasOverlap) {
+          return NextResponse.json(
+            { error: 'One or more rooms in this combination are already booked for these dates' },
+            { status: 409 }
+          )
+        }
+      }
     }
 
     const booking = await createBooking(data)

@@ -1,6 +1,6 @@
-import type { RoomWithRates } from '@/types/admin'
+import type { RoomWithRates, RoomComboWithRates } from '@/types/admin'
 
-export function getRateForGuestCount(room: RoomWithRates, guestCount: number): number | null {
+export function getRateForGuestCount(room: RoomWithRates | RoomComboWithRates, guestCount: number): number | null {
   if (!room.rates || room.rates.length === 0) return null
 
   for (const rate of room.rates) {

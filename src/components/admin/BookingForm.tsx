@@ -1,9 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Booking, RoomWithRates } from '@/types/admin'
+import type { Booking, RoomWithRates, RoomComboWithRates } from '@/types/admin'
 import { getRateForGuestCount } from '@/lib/utils/pricing'
 import { formatPeso } from '@/lib/utils/formatters'
+import ConfirmDialog from '@/components/admin/ConfirmDialog'
 
 interface Props {
   mode: 'create' | 'edit'
@@ -13,13 +14,24 @@ interface Props {
 const STATUS_OPTIONS = ['pending', 'partial', 'paid', 'cancelled'] as const
 const SOURCE_OPTIONS = ['walk-in', 'facebook', 'website', 'phone'] as const
 
+// selection value format: "room:<id>" | "combo:<id>"
+function parseSelection(val: string) {
+  const [type, id] = val.split(':')
+  return { type: type as 'room' | 'combo', id }
+}
+
 export default function BookingForm({ mode, initialData }: Props) {
   const router = useRouter()
   const [rooms, setRooms] = useState<RoomWithRates[]>([])
+  const [combos, setCombos] = useState<RoomComboWithRates[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
-  const [roomId, setRoomId] = useState(initialData?.room_id ?? '')
+  // Build initial selection value from initialData
+  const initialSelection = initialData?.room_id ? `room:${initialData.room_id}` : ''
+
+  const [selection, setSelection] = useState(initialSelection)
   const [guestName, setGuestName] = useState(initialData?.guest_name ?? '')
   const [guestCount, setGuestCount] = useState(initialData?.guest_count?.toString() ?? '')
   const [checkIn, setCheckIn] = useState(initialData?.check_in ?? '')
@@ -34,30 +46,56 @@ export default function BookingForm({ mode, initialData }: Props) {
   const [notes, setNotes] = useState(initialData?.notes ?? '')
 
   const balance = (parseInt(totalAmount) || 0) - (parseInt(downPayment) || 0)
-  const selectedRoom = rooms.find(r => r.$id === roomId)
+
+  const { type: selType, id: selId } = selection ? parseSelection(selection) : { type: undefined, id: undefined }
+  const selectedRoom = selType === 'room' ? rooms.find(r => r.$id === selId) : undefined
+  const selectedCombo = selType === 'combo' ? combos.find(c => c.$id === selId) : undefined
+  const activeRates = selectedRoom?.rates ?? selectedCombo?.rates ?? []
 
   useEffect(() => {
-    fetch('/api/admin/rooms')
-      .then(r => r.json())
-      .then(setRooms)
+    Promise.all([
+      fetch('/api/admin/rooms').then(r => r.json()),
+      fetch('/api/admin/combos').then(r => r.json()),
+    ])
+      .then(([r, c]) => {
+        setRooms(r)
+        setCombos(c)
+      })
       .catch(() => {})
   }, [])
 
+  // Auto-fill total from rate when guest count or selection changes
   useEffect(() => {
-    if (!selectedRoom || !guestCount) return
-    const rate = getRateForGuestCount(selectedRoom, parseInt(guestCount))
+    if (!guestCount || activeRates.length === 0) return
+    const rateSource = selectedRoom ?? selectedCombo
+    if (!rateSource) return
+    const rate = getRateForGuestCount(rateSource, parseInt(guestCount))
     if (rate != null) setTotalAmount(rate.toString())
-  }, [selectedRoom, guestCount])
+  }, [selection, guestCount]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!selId || !selType) return
     setLoading(true)
     setError('')
 
-    const room = rooms.find(r => r.$id === roomId)
+    let room_id = selId
+    let room_name = ''
+    let aux_room_ids: string | null = null
+
+    if (selType === 'room') {
+      room_name = rooms.find(r => r.$id === selId)?.name ?? ''
+    } else if (selType === 'combo' && selectedCombo) {
+      room_name = selectedCombo.name
+      const ids = selectedCombo.room_ids.split(',').map(s => s.trim()).filter(Boolean)
+      room_id = ids[0] ?? selId          // primary room = first in combo
+      aux_room_ids = ids.slice(1).join(',') || null
+    }
+
     const payload = {
-      room_id: roomId,
-      room_name: room?.name ?? '',
+      room_id,
+      room_name,
+      aux_room_ids,
       guest_name: guestName,
       guest_count: guestCount ? parseInt(guestCount) : null,
       check_in: checkIn,
@@ -99,6 +137,13 @@ export default function BookingForm({ mode, initialData }: Props) {
     }
   }
 
+  async function handleDelete() {
+    if (!initialData?.$id) return
+    await fetch(`/api/admin/bookings/${initialData.$id}`, { method: 'DELETE' })
+    router.push('/admin/bookings')
+    router.refresh()
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
@@ -109,20 +154,38 @@ export default function BookingForm({ mode, initialData }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Room *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Room / Combination *</label>
           <select
-            value={roomId}
-            onChange={e => setRoomId(e.target.value)}
+            value={selection}
+            onChange={e => { setSelection(e.target.value); setGuestCount(''); setTotalAmount('') }}
             required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
           >
-            <option value="">Select a room</option>
-            {rooms.map(r => (
-              <option key={r.$id} value={r.$id}>
-                {r.name} ({r.capacity})
-              </option>
-            ))}
+            <option value="">Select a room or combo</option>
+            {rooms.length > 0 && (
+              <optgroup label="Individual Rooms">
+                {rooms.filter(r => r.is_active).map(r => (
+                  <option key={r.$id} value={`room:${r.$id}`}>
+                    {r.name} ({r.capacity})
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {combos.length > 0 && (
+              <optgroup label="Room Combinations">
+                {combos.filter(c => c.is_active).map(c => (
+                  <option key={c.$id} value={`combo:${c.$id}`}>
+                    {c.name} ({c.capacity})
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
+          {selectedCombo && (
+            <p className="text-xs text-amber-700 mt-1 font-medium">
+              Combo: blocks all rooms simultaneously on the calendar
+            </p>
+          )}
         </div>
 
         <div>
@@ -144,13 +207,13 @@ export default function BookingForm({ mode, initialData }: Props) {
             value={guestCount}
             onChange={e => setGuestCount(e.target.value)}
             min={1}
-            max={30}
+            max={50}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
             placeholder="No. of guests"
           />
-          {selectedRoom && guestCount && (
+          {activeRates.length > 0 && (
             <p className="text-xs text-amber-600 mt-1">
-              Rates: {selectedRoom.rates.map(r => `${r.guests_label} – ${formatPeso(r.price)}`).join(' · ')}
+              {activeRates.map(r => `${r.guests_label} – ${formatPeso(r.price)}`).join(' · ')}
             </p>
           )}
         </div>
@@ -291,7 +354,7 @@ export default function BookingForm({ mode, initialData }: Props) {
         />
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-wrap">
         <button
           type="submit"
           disabled={loading}
@@ -306,7 +369,26 @@ export default function BookingForm({ mode, initialData }: Props) {
         >
           Cancel
         </button>
+        {mode === 'edit' && (
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            className="ml-auto border border-red-300 hover:bg-red-50 text-red-600 font-medium py-2 px-6 rounded-lg transition-colors"
+          >
+            Delete Booking
+          </button>
+        )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete Booking"
+        message="This will permanently delete the booking. This cannot be undone."
+        confirmLabel="Delete Permanently"
+        danger
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </form>
   )
 }

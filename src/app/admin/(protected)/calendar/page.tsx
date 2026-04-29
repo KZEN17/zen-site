@@ -25,12 +25,20 @@ export default async function CalendarPage({ searchParams }: Props) {
   const roomIdsByName = new Map(rooms.map(room => [room.name.trim().toLowerCase(), room.$id]))
 
   const bookingsByRoom = bookings.reduce<Record<string, Booking[]>>((acc, b) => {
+    // Primary room
     const roomKey = roomIds.has(b.room_id)
       ? b.room_id
       : roomIdsByName.get(b.room_name.trim().toLowerCase()) ?? b.room_id
-
     if (!acc[roomKey]) acc[roomKey] = []
     acc[roomKey].push(b)
+
+    // Aux rooms — combo bookings block all constituent rooms
+    if (b.aux_room_ids) {
+      for (const id of b.aux_room_ids.split(',').map(s => s.trim()).filter(Boolean)) {
+        if (!acc[id]) acc[id] = []
+        acc[id].push(b)
+      }
+    }
     return acc
   }, {})
 

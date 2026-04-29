@@ -41,6 +41,18 @@ export interface Booking extends AppwriteDocument {
   source: BookingSource | null
   discount_code: string | null
   notes: string | null
+  aux_room_ids: string | null  // comma-separated room IDs for combo bookings
+}
+
+export interface RoomCombo extends AppwriteDocument {
+  name: string
+  room_ids: string  // comma-separated room $id values
+  capacity: string
+  is_active: boolean
+}
+
+export interface RoomComboWithRates extends RoomCombo {
+  rates: RoomRate[]
 }
 
 export type ExpenseCategory =

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import type { Employee, Shift, EmployeeRole } from '@/types/admin'
 import { EMPLOYEE_ROLE_LABELS as ROLE_LABELS } from '@/types/admin'
+import ConfirmDialog from '@/components/admin/ConfirmDialog'
 
 interface Props {
   employees: Employee[]
@@ -41,6 +42,7 @@ export default function WeeklySchedule({ employees: initEmployees, shifts: initS
 
   // Employee form state
   const [showAddEmp, setShowAddEmp] = useState(false)
+  const [deleteEmpId, setDeleteEmpId] = useState<string | null>(null)
   const [newEmpName, setNewEmpName] = useState('')
   const [newEmpRole, setNewEmpRole] = useState<EmployeeRole>('cleaner')
 
@@ -155,6 +157,21 @@ export default function WeeklySchedule({ employees: initEmployees, shifts: initS
       setShowAddEmp(false)
     } catch {
       setError('Failed to add employee')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function deleteEmployee(id: string) {
+    setLoading(true)
+    setError('')
+    try {
+      await fetch(`/api/admin/employees/${id}`, { method: 'DELETE' })
+      setEmployees(prev => prev.filter(e => e.$id !== id))
+      setShifts(prev => prev.filter(s => s.employee_id !== id))
+      setDeleteEmpId(null)
+    } catch {
+      setError('Failed to delete employee')
     } finally {
       setLoading(false)
     }
@@ -302,12 +319,20 @@ export default function WeeklySchedule({ employees: initEmployees, shifts: initS
                 </span>
                 <span className="ml-2 text-xs text-gray-400">{ROLE_LABELS[emp.role]}</span>
               </div>
-              <button
-                onClick={() => toggleActive(emp)}
-                className="text-xs text-gray-400 hover:text-gray-600"
-              >
-                {emp.is_active ? 'Deactivate' : 'Reactivate'}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => toggleActive(emp)}
+                  className="text-xs text-gray-400 hover:text-gray-600"
+                >
+                  {emp.is_active ? 'Deactivate' : 'Reactivate'}
+                </button>
+                <button
+                  onClick={() => setDeleteEmpId(emp.$id)}
+                  className="text-xs text-red-400 hover:text-red-600"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
           {employees.length === 0 && (
@@ -315,6 +340,16 @@ export default function WeeklySchedule({ employees: initEmployees, shifts: initS
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteEmpId}
+        title="Delete Employee"
+        message="This will permanently delete this employee and all their scheduled shifts. This cannot be undone."
+        confirmLabel="Delete Permanently"
+        danger
+        onConfirm={() => deleteEmpId && deleteEmployee(deleteEmpId)}
+        onCancel={() => setDeleteEmpId(null)}
+      />
 
       {/* Shift modal */}
       {modal && (

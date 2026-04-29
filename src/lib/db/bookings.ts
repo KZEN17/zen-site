@@ -30,6 +30,7 @@ export interface BookingData {
   source?: BookingSource | null
   discount_code?: string | null
   notes?: string | null
+  aux_room_ids?: string | null
 }
 
 export async function getBookings(filters: BookingFilters = {}): Promise<{ rows: Booking[]; total: number }> {
@@ -94,6 +95,7 @@ export async function createBooking(data: BookingData): Promise<Booking> {
     source: data.source ?? null,
     discount_code: data.discount_code ?? null,
     notes: data.notes ?? null,
+    aux_room_ids: data.aux_room_ids ?? null,
   })
   return plain(row)
 }
@@ -111,6 +113,11 @@ export async function cancelBooking(id: string): Promise<Booking> {
   return updateBooking(id, { payment_status: 'cancelled' })
 }
 
+export async function deleteBooking(id: string): Promise<void> {
+  const { tables, databaseId } = createAdminClient()
+  await tables.deleteRow(databaseId, TABLES.bookings, id)
+}
+
 export async function getBookingsForCalendar(year: number, month: number): Promise<Booking[]> {
   const { tables, databaseId } = createAdminClient()
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
@@ -126,6 +133,17 @@ export async function getBookingsForCalendar(year: number, month: number): Promi
     Query.limit(500),
   ])
   return plain(res.rows)
+}
+
+export async function getCheckoutsOnDate(date: string): Promise<Booking[]> {
+  const { tables, databaseId } = createAdminClient()
+  const res = await tables.listRows(databaseId, TABLES.bookings, [
+    Query.equal('payment_status', ['pending', 'partial', 'paid']),
+    Query.equal('check_out', date),
+    Query.orderAsc('check_out'),
+    Query.limit(50),
+  ])
+  return plain(res.rows) as unknown as Booking[]
 }
 
 export async function getUpcomingBookings(days = 7): Promise<Booking[]> {

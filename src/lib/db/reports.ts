@@ -6,22 +6,39 @@ import type { Booking, Expense, MonthlyReport, YearlyData } from '@/types/admin'
 export async function getMonthlyReport(year: number, month: number): Promise<MonthlyReport> {
   const { tables, databaseId } = createAdminClient()
 
-  const startDate = `${year}-${String(month).padStart(2, '0')}-01`
+  const monthStart = `${year}-${String(month).padStart(2, '0')}-01`
   const daysCount = getDaysInMonth(new Date(year, month - 1, 1))
-  const endDate = `${year}-${String(month).padStart(2, '0')}-${String(daysCount).padStart(2, '0')}`
+  const monthEnd = `${year}-${String(month).padStart(2, '0')}-${String(daysCount).padStart(2, '0')}`
+  const nextMonthStart =
+    month === 12
+      ? `${year + 1}-01-01`
+      : `${year}-${String(month + 1).padStart(2, '0')}-01`
 
-  const [bookingsRes, expensesRes, roomsRes] = await Promise.all([
+  const monthStartMs = new Date(monthStart + 'T00:00:00').getTime()
+  const nextMonthStartMs = new Date(nextMonthStart + 'T00:00:00').getTime()
+
+  const [revenueRes, expensesRes, occupancyRes, roomsRes] = await Promise.all([
+    // Revenue: bookings that START this month (booking "belongs to" the month it's made)
     tables.listRows(databaseId, TABLES.bookings, [
       Query.equal('payment_status', ['pending', 'partial', 'paid']),
-      Query.greaterThanEqual('check_in', startDate),
-      Query.lessThanEqual('check_in', endDate),
+      Query.greaterThanEqual('check_in', monthStart),
+      Query.lessThanEqual('check_in', monthEnd),
       Query.limit(1000),
     ]),
+    // Expenses within this month
     tables.listRows(databaseId, TABLES.expenses, [
-      Query.greaterThanEqual('expense_date', startDate),
-      Query.lessThanEqual('expense_date', endDate),
+      Query.greaterThanEqual('expense_date', monthStart),
+      Query.lessThanEqual('expense_date', monthEnd),
       Query.limit(1000),
     ]),
+    // Occupancy: bookings that OVERLAP with this month (started before end, ended after start)
+    tables.listRows(databaseId, TABLES.bookings, [
+      Query.equal('payment_status', ['pending', 'partial', 'paid']),
+      Query.lessThan('check_in', nextMonthStart),
+      Query.greaterThan('check_out', monthStart),
+      Query.limit(1000),
+    ]),
+    // Active rooms for occupancy denominator
     tables.listRows(databaseId, TABLES.rooms, [
       Query.equal('is_active', true),
       Query.orderAsc('sort_order'),
@@ -29,35 +46,41 @@ export async function getMonthlyReport(year: number, month: number): Promise<Mon
     ]),
   ])
 
-  const bookings = bookingsRes.rows as unknown as Booking[]
+  const revenueBookings = revenueRes.rows as unknown as Booking[]
   const expenses = expensesRes.rows as unknown as Expense[]
+  const occupancyBookings = occupancyRes.rows as unknown as Booking[]
+  const rooms = roomsRes.rows as unknown as { $id: string; name: string }[]
 
-  const totalRevenue = bookings.reduce((s, b) => s + b.total_amount, 0)
+  // Revenue
+  const totalRevenue = revenueBookings.reduce((s, b) => s + b.total_amount, 0)
   const revenueByRoom: Record<string, number> = {}
-  for (const b of bookings) {
+  for (const b of revenueBookings) {
     revenueByRoom[b.room_name] = (revenueByRoom[b.room_name] ?? 0) + b.total_amount
   }
 
+  // Expenses
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0)
   const expensesByCategory: Record<string, number> = {}
   for (const e of expenses) {
     expensesByCategory[e.category] = (expensesByCategory[e.category] ?? 0) + e.amount
   }
 
-  const occupancyByRoom = (roomsRes.rows as unknown as { $id: string; name: string }[]).map(room => {
-    const roomBookings = bookings.filter(b => b.room_id === room.$id)
+  // Occupancy — clip each booking's nights to the month boundary
+  const occupancyByRoom = rooms.map(room => {
+    const roomBookings = occupancyBookings.filter(b => b.room_id === room.$id)
     const bookedNights = roomBookings.reduce((sum, b) => {
-      const checkIn = new Date(b.check_in + 'T00:00:00')
-      const checkOut = new Date(b.check_out + 'T00:00:00')
-      const nights = Math.round((checkOut.getTime() - checkIn.getTime()) / 86400000)
-      return sum + Math.max(0, nights)
+      const checkInMs = new Date(b.check_in + 'T00:00:00').getTime()
+      const checkOutMs = new Date(b.check_out + 'T00:00:00').getTime()
+      const effectiveIn = Math.max(checkInMs, monthStartMs)
+      const effectiveOut = Math.min(checkOutMs, nextMonthStartMs)
+      return sum + Math.max(0, Math.round((effectiveOut - effectiveIn) / 86400000))
     }, 0)
-    const capped = Math.min(bookedNights, daysCount)
+    const nights = Math.min(bookedNights, daysCount)
     return {
       room_name: room.name,
-      bookedNights: capped,
+      bookedNights: nights,
       totalNights: daysCount,
-      rate: daysCount > 0 ? capped / daysCount : 0,
+      rate: daysCount > 0 ? nights / daysCount : 0,
     }
   })
 
@@ -75,26 +98,23 @@ export async function getMonthlyReport(year: number, month: number): Promise<Mon
     },
     netIncome: totalRevenue - totalExpenses,
     occupancy: { byRoom: occupancyByRoom },
-    bookingCount: bookings.length,
+    bookingCount: revenueBookings.length,
   }
 }
 
 export async function getYearlyData(year: number): Promise<YearlyData[]> {
   const { tables, databaseId } = createAdminClient()
 
-  const startDate = `${year}-01-01`
-  const endDate = `${year}-12-31`
-
   const [bookingsRes, expensesRes] = await Promise.all([
     tables.listRows(databaseId, TABLES.bookings, [
       Query.equal('payment_status', ['pending', 'partial', 'paid']),
-      Query.greaterThanEqual('check_in', startDate),
-      Query.lessThanEqual('check_in', endDate),
+      Query.greaterThanEqual('check_in', `${year}-01-01`),
+      Query.lessThanEqual('check_in', `${year}-12-31`),
       Query.limit(5000),
     ]),
     tables.listRows(databaseId, TABLES.expenses, [
-      Query.greaterThanEqual('expense_date', startDate),
-      Query.lessThanEqual('expense_date', endDate),
+      Query.greaterThanEqual('expense_date', `${year}-01-01`),
+      Query.lessThanEqual('expense_date', `${year}-12-31`),
       Query.limit(5000),
     ]),
   ])

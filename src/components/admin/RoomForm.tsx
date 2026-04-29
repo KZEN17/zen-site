@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { RoomWithRates, RoomRate } from '@/types/admin'
 import { formatPeso } from '@/lib/utils/formatters'
+import ConfirmDialog from '@/components/admin/ConfirmDialog'
 
 interface Props {
   room?: RoomWithRates
@@ -21,6 +22,7 @@ export default function RoomForm({ room }: Props) {
   const [newPrice, setNewPrice] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   function autoSlug(value: string) {
     return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -50,6 +52,13 @@ export default function RoomForm({ room }: Props) {
     } finally {
       setSaving(false)
     }
+  }
+
+  async function handleDelete() {
+    if (!room) return
+    await fetch(`/api/admin/rooms/${room.$id}`, { method: 'DELETE' })
+    router.push('/admin/rooms')
+    router.refresh()
   }
 
   async function addRate() {
@@ -201,7 +210,7 @@ export default function RoomForm({ room }: Props) {
         <p className="text-xs text-gray-400">Save the room first, then add rate tiers.</p>
       )}
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-wrap">
         <button
           type="submit"
           disabled={saving}
@@ -216,7 +225,26 @@ export default function RoomForm({ room }: Props) {
         >
           Cancel
         </button>
+        {isEdit && (
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            className="ml-auto py-2 px-5 border border-red-300 hover:bg-red-50 text-red-600 text-sm rounded-lg transition-colors"
+          >
+            Delete Room
+          </button>
+        )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete Room"
+        message="This will permanently delete this room and all its rate tiers. This cannot be undone."
+        confirmLabel="Delete Permanently"
+        danger
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </form>
   )
 }

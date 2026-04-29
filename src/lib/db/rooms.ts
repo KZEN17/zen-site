@@ -90,3 +90,10 @@ export async function deleteRoomRate(rateId: string): Promise<void> {
   const { tables, databaseId } = createAdminClient()
   await tables.deleteRow(databaseId, TABLES.roomRates, rateId)
 }
+
+export async function deleteRoom(id: string): Promise<void> {
+  const { tables, databaseId } = createAdminClient()
+  const rates = await getRoomRates(id)
+  await Promise.all(rates.map(r => tables.deleteRow(databaseId, TABLES.roomRates, r.$id)))
+  await tables.deleteRow(databaseId, TABLES.rooms, id)
+}

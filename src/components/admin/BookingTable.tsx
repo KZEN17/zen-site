@@ -23,12 +23,24 @@ const STATUS_STYLES: Record<PaymentStatus, string> = {
 export default function BookingTable({ bookings, total, page, limit }: Props) {
   const router = useRouter()
   const [cancelId, setCancelId] = useState<string | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
   const totalPages = Math.ceil(total / limit)
 
   async function handleCancel() {
     if (!cancelId) return
-    await fetch(`/api/admin/bookings/${cancelId}`, { method: 'DELETE' })
+    await fetch(`/api/admin/bookings/${cancelId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payment_status: 'cancelled' }),
+    })
     setCancelId(null)
+    router.refresh()
+  }
+
+  async function handleDelete() {
+    if (!deleteId) return
+    await fetch(`/api/admin/bookings/${deleteId}`, { method: 'DELETE' })
+    setDeleteId(null)
     router.refresh()
   }
 
@@ -104,11 +116,17 @@ export default function BookingTable({ bookings, total, page, limit }: Props) {
                         {b.payment_status !== 'cancelled' && (
                           <button
                             onClick={() => setCancelId(b.$id)}
-                            className="text-red-500 hover:text-red-700 text-xs font-medium"
+                            className="text-orange-500 hover:text-orange-700 text-xs font-medium"
                           >
                             Cancel
                           </button>
                         )}
+                        <button
+                          onClick={() => setDeleteId(b.$id)}
+                          className="text-red-500 hover:text-red-700 text-xs font-medium"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -153,6 +171,16 @@ export default function BookingTable({ bookings, total, page, limit }: Props) {
         danger
         onConfirm={handleCancel}
         onCancel={() => setCancelId(null)}
+      />
+
+      <ConfirmDialog
+        open={!!deleteId}
+        title="Delete Booking"
+        message="This will permanently delete the booking. This cannot be undone."
+        confirmLabel="Delete Permanently"
+        danger
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
       />
     </>
   )

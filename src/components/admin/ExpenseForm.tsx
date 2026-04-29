@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import type { Expense, ExpenseCategory } from '@/types/admin'
 import { EXPENSE_CATEGORY_LABELS } from '@/types/admin'
 import { todayISO } from '@/lib/utils/formatters'
+import ConfirmDialog from '@/components/admin/ConfirmDialog'
 
 interface Props {
   mode: 'create' | 'edit'
@@ -22,6 +23,7 @@ export default function ExpenseForm({ mode, initialData }: Props) {
   const [description, setDescription] = useState(initialData?.description ?? '')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -58,6 +60,13 @@ export default function ExpenseForm({ mode, initialData }: Props) {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleDelete() {
+    if (!initialData?.$id) return
+    await fetch(`/api/admin/expenses/${initialData.$id}`, { method: 'DELETE' })
+    router.push('/admin/expenses')
+    router.refresh()
   }
 
   return (
@@ -121,7 +130,7 @@ export default function ExpenseForm({ mode, initialData }: Props) {
         />
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-wrap">
         <button
           type="submit"
           disabled={loading}
@@ -136,7 +145,26 @@ export default function ExpenseForm({ mode, initialData }: Props) {
         >
           Cancel
         </button>
+        {mode === 'edit' && (
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            className="ml-auto border border-red-300 hover:bg-red-50 text-red-600 font-medium py-2 px-6 rounded-lg transition-colors"
+          >
+            Delete Expense
+          </button>
+        )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete Expense"
+        message="This will permanently delete this expense record. This cannot be undone."
+        confirmLabel="Delete Permanently"
+        danger
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </form>
   )
 }

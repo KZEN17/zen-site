@@ -39,3 +39,13 @@ export async function updateEmployee(
   const row = await tables.updateRow(databaseId, TABLE, id, data)
   return row as unknown as Employee
 }
+
+export async function deleteEmployee(id: string): Promise<void> {
+  const { tables, databaseId } = createAdminClient()
+  const shifts = await tables.listRows(databaseId, 'shifts', [
+    Query.equal('employee_id', id),
+    Query.limit(500),
+  ])
+  await Promise.all(shifts.rows.map((r: { $id: string }) => tables.deleteRow(databaseId, 'shifts', r.$id)))
+  await tables.deleteRow(databaseId, TABLE, id)
+}

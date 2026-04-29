@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getRoomById, updateRoom } from '@/lib/db/rooms'
+import { getRoomById, updateRoom, deleteRoom } from '@/lib/db/rooms'
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -21,5 +21,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   } catch (err) {
     console.error('PATCH /api/admin/rooms/[id]:', err)
     return NextResponse.json({ error: 'Failed to update room' }, { status: 500 })
+  }
+}
+
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
+    await deleteRoom(id)
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('DELETE /api/admin/rooms/[id]:', err)
+    return NextResponse.json({ error: 'Failed to delete room' }, { status: 500 })
   }
 }
