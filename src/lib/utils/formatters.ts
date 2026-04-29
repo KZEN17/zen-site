@@ -30,3 +30,8 @@ export function formatMonthShort(monthIndex: number): string {
 export function todayISO(): string {
   return new Date().toISOString().split('T')[0]
 }
+
+/** Strip Appwrite's non-plain prototype so objects can cross RSC → Client Component boundaries. */
+export function plain<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value))
+}

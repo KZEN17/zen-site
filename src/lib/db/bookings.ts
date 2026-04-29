@@ -1,5 +1,6 @@
 import { Query, ID } from 'node-appwrite'
 import { createAdminClient, TABLES } from '@/lib/appwrite/server'
+import { plain } from '@/lib/utils/formatters'
 import type { Booking, PaymentStatus, BookingSource } from '@/types/admin'
 
 export interface BookingFilters {
@@ -44,13 +45,13 @@ export async function getBookings(filters: BookingFilters = {}): Promise<{ rows:
   if (to) queries.push(Query.lessThanEqual('check_in', to))
 
   const res = await tables.listRows(databaseId, TABLES.bookings, queries)
-  return { rows: res.rows as unknown as Booking[], total: res.total }
+  return { rows: plain(res.rows) as Booking[], total: res.total }
 }
 
 export async function getBookingById(id: string): Promise<Booking> {
   const { tables, databaseId } = createAdminClient()
   const row = await tables.getRow(databaseId, TABLES.bookings, id)
-  return row as unknown as Booking
+  return plain(row) as Booking
 }
 
 export async function checkOverlap(
@@ -91,7 +92,7 @@ export async function createBooking(data: BookingData): Promise<Booking> {
     discount_code: data.discount_code ?? null,
     notes: data.notes ?? null,
   })
-  return row as unknown as Booking
+  return plain(row) as Booking
 }
 
 export async function updateBooking(
@@ -100,7 +101,7 @@ export async function updateBooking(
 ): Promise<Booking> {
   const { tables, databaseId } = createAdminClient()
   const row = await tables.updateRow(databaseId, TABLES.bookings, id, data)
-  return row as unknown as Booking
+  return plain(row) as Booking
 }
 
 export async function cancelBooking(id: string): Promise<Booking> {
@@ -121,7 +122,7 @@ export async function getBookingsForCalendar(year: number, month: number): Promi
     Query.orderAsc('check_in'),
     Query.limit(500),
   ])
-  return res.rows as unknown as Booking[]
+  return plain(res.rows) as Booking[]
 }
 
 export async function getUpcomingBookings(days = 7): Promise<Booking[]> {
@@ -136,5 +137,5 @@ export async function getUpcomingBookings(days = 7): Promise<Booking[]> {
     Query.orderAsc('check_in'),
     Query.limit(20),
   ])
-  return res.rows as unknown as Booking[]
+  return plain(res.rows) as Booking[]
 }
