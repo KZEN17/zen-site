@@ -129,35 +129,6 @@ export default async function RoomDetailsPage({ params }: PageProps) {
             <div className="mb-8">
               <RoomAvailabilityCalendar roomSlug={room.id} roomName={room.name} />
             </div>
-
-            {/* Contact CTA */}
-            <div className="bg-amber-50 rounded-xl p-6">
-              <h3 className="text-xl font-serif font-bold text-gray-900 mb-2">
-                Interested in this room?
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Contact us for availability and rates.
-              </p>
-              <a
-                href={`https://m.me/100075945187126?text=${encodeURIComponent(`Hi! I'd like to book ${room.name} at ZEN House Calayo.`)}`}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-white font-medium rounded hover:bg-amber-600 transition-colors"
-              >
-                Book Now
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-              </a>
-            </div>
           </div>
         </div>
       </div>
