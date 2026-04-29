@@ -1,9 +1,12 @@
 import Link from 'next/link'
-import { getBookings, getCheckoutsOnDate, getUpcomingBookings } from '@/lib/db/bookings'
+import { getBookings, getBookingsForCalendar, getCheckoutsOnDate, getUpcomingBookings } from '@/lib/db/bookings'
+import { getRooms } from '@/lib/db/rooms'
 import { getMonthlyReport } from '@/lib/db/reports'
+import DashboardAvailabilityCalendar from '@/components/admin/DashboardAvailabilityCalendar'
 import StatCard from '@/components/admin/StatCard'
 import MonthNav from '@/components/admin/MonthNav'
 import { formatPeso, formatDate, formatMonthYear } from '@/lib/utils/formatters'
+import { groupBookingsByRoom } from '@/lib/utils/availability'
 
 interface Props {
   searchParams: Promise<{ year?: string; month?: string }>
@@ -16,14 +19,17 @@ export default async function DashboardPage({ searchParams }: Props) {
   const month = parseInt(params.month ?? String(now.getMonth() + 1))
   const today = now.toISOString().split('T')[0]
 
-  const [report, upcoming, checkinsToday, checkoutsToday] = await Promise.all([
+  const [report, upcoming, checkinsToday, checkoutsToday, rooms, monthBookings] = await Promise.all([
     getMonthlyReport(year, month),
     getUpcomingBookings(7),
     getBookings({ from: today, to: today, limit: 50 }),
     getCheckoutsOnDate(today),
+    getRooms(),
+    getBookingsForCalendar(year, month),
   ])
 
   const checkinToday = checkinsToday.rows.filter(b => b.check_in === today)
+  const bookingsByRoom = groupBookingsByRoom(rooms, monthBookings)
 
   const avgOccupancy =
     report.occupancy.byRoom.length > 0
@@ -84,6 +90,13 @@ export default async function DashboardPage({ searchParams }: Props) {
           />
         </div>
       </div>
+
+      <DashboardAvailabilityCalendar
+        rooms={rooms}
+        bookingsByRoom={bookingsByRoom}
+        year={year}
+        month={month}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-5">

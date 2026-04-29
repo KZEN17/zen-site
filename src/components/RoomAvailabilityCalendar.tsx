@@ -274,13 +274,6 @@ export default function RoomAvailabilityCalendar({
               />
             </svg>
           </a>
-          {/* <button
-            type="button"
-            onClick={copyMessageToClipboard}
-            className="inline-flex items-center gap-2 px-6 py-3 border border-amber-300 text-amber-700 font-medium rounded hover:bg-amber-100 transition-colors"
-          >
-            Copy Message
-          </button> */}
         </div>
         <p className="text-xs text-gray-500 mt-3">
           Messenger sometimes ignores prefilled text, so we also provide the

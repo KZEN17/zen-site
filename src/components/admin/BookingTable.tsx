@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { Booking, PaymentStatus } from '@/types/admin'
 import { formatPeso, formatDate } from '@/lib/utils/formatters'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
@@ -22,9 +22,22 @@ const STATUS_STYLES: Record<PaymentStatus, string> = {
 
 export default function BookingTable({ bookings, total, page, limit }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [cancelId, setCancelId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const totalPages = Math.ceil(total / limit)
+
+  function getPageHref(nextPage: number): string {
+    const params = new URLSearchParams(searchParams.toString())
+    if (nextPage <= 1) {
+      params.delete('page')
+    } else {
+      params.set('page', String(nextPage))
+    }
+
+    const query = params.toString()
+    return query ? `?${query}` : '?'
+  }
 
   async function handleCancel() {
     if (!cancelId) return
@@ -144,7 +157,7 @@ export default function BookingTable({ bookings, total, page, limit }: Props) {
             <div className="flex gap-2">
               {page > 1 && (
                 <Link
-                  href={`?page=${page - 1}`}
+                  href={getPageHref(page - 1)}
                   className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
                 >
                   Previous
@@ -152,7 +165,7 @@ export default function BookingTable({ bookings, total, page, limit }: Props) {
               )}
               {page < totalPages && (
                 <Link
-                  href={`?page=${page + 1}`}
+                  href={getPageHref(page + 1)}
                   className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
                 >
                   Next
