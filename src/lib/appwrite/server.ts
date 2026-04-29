@@ -5,6 +5,7 @@ export const TABLES = {
   roomRates: 'room_rates',
   bookings: 'bookings',
   expenses: 'expenses',
+  banners: 'banners',
 } as const
 
 function getEnv(key: string): string {

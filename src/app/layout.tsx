@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, Great_Vibes } from "next/font/google";
 import "./globals.css";
-import { ConditionalNav, ConditionalFooter } from "@/components/ConditionalShell";
+import { ConditionalNav, ConditionalFooter, ConditionalBanner } from "@/components/ConditionalShell";
 import { Analytics } from "@vercel/analytics/next";
 const inter = Inter({
   subsets: ["latin"],
@@ -45,6 +45,7 @@ export default function RootLayout({
         className={`${inter.variable} ${playfair.variable} ${greatVibes.variable} antialiased font-sans`}
       >
         <ConditionalNav />
+        <ConditionalBanner />
         <Analytics />
         <main>{children}</main>
         <ConditionalFooter />

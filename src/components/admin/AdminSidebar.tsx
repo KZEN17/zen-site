@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: '/admin/schedule', label: 'Schedule', icon: '⊞' },
   { href: '/admin/expenses', label: 'Expenses', icon: '₱' },
   { href: '/admin/reports', label: 'Reports', icon: '↗' },
+  { href: '/admin/banners', label: 'Banners', icon: '◈' },
 ]
 
 export default function AdminSidebar() {

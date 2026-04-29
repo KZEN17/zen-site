@@ -2,6 +2,7 @@ import { rooms } from "@/data/siteData";
 import ImageCarousel from "@/components/ImageCarousel";
 import RoomAvailabilityCalendar from "@/components/RoomAvailabilityCalendar";
 import { notFound } from "next/navigation";
+import { getRoomBySlug, getRoomRates } from "@/lib/db/rooms";
 
 export function generateStaticParams() {
   return rooms.map((room) => ({
@@ -19,6 +20,20 @@ export default async function RoomDetailsPage({ params }: PageProps) {
 
   if (!room) {
     notFound();
+  }
+
+  // Load live rates from Appwrite; fall back to siteData rates
+  let displayRates = room.rates
+  try {
+    const appwriteRoom = await getRoomBySlug(room.id)
+    if (appwriteRoom) {
+      const liveRates = await getRoomRates(appwriteRoom.$id)
+      if (liveRates.length > 0) {
+        displayRates = liveRates.map(r => ({ guests: r.guests_label, price: r.price }))
+      }
+    }
+  } catch {
+    // silently use static rates
   }
 
   return (
@@ -112,7 +127,7 @@ export default async function RoomDetailsPage({ params }: PageProps) {
               Rates
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-              {room.rates.map((rate, idx) => (
+              {displayRates.map((rate, idx) => (
                 <div
                   key={idx}
                   className="bg-white border-2 border-amber-200 rounded-lg p-4"
@@ -125,11 +140,12 @@ export default async function RoomDetailsPage({ params }: PageProps) {
                 </div>
               ))}
             </div>
-
-            <div className="mb-8">
-              <RoomAvailabilityCalendar roomSlug={room.id} roomName={room.name} />
-            </div>
           </div>
+        </div>
+
+        {/* Full-width availability calendar */}
+        <div className="mt-12">
+          <RoomAvailabilityCalendar roomSlug={room.id} roomName={room.name} />
         </div>
       </div>
     </div>

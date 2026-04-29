@@ -127,3 +127,10 @@ export interface Shift extends AppwriteDocument {
   end_time: string
   notes: string | null
 }
+
+export interface Banner extends AppwriteDocument {
+  title: string
+  image_url: string
+  link_url: string | null
+  is_active: boolean
+}
