@@ -1,7 +1,10 @@
 import { Query, ID } from 'node-appwrite'
+import type { Models } from 'node-appwrite'
 import { createAdminClient, TABLES } from '@/lib/appwrite/server'
 import { plain } from '@/lib/utils/formatters'
 import type { Booking, PaymentStatus, BookingSource } from '@/types/admin'
+
+type BookingRow = Models.Row & Booking
 
 export interface BookingFilters {
   roomId?: string
@@ -44,14 +47,14 @@ export async function getBookings(filters: BookingFilters = {}): Promise<{ rows:
   if (from) queries.push(Query.greaterThanEqual('check_in', from))
   if (to) queries.push(Query.lessThanEqual('check_in', to))
 
-  const res = await tables.listRows(databaseId, TABLES.bookings, queries)
-  return { rows: plain(res.rows) as Booking[], total: res.total }
+  const res = await tables.listRows<BookingRow>(databaseId, TABLES.bookings, queries)
+  return { rows: plain(res.rows), total: res.total }
 }
 
 export async function getBookingById(id: string): Promise<Booking> {
   const { tables, databaseId } = createAdminClient()
-  const row = await tables.getRow(databaseId, TABLES.bookings, id)
-  return plain(row) as Booking
+  const row = await tables.getRow<BookingRow>(databaseId, TABLES.bookings, id)
+  return plain(row)
 }
 
 export async function checkOverlap(
@@ -76,7 +79,7 @@ export async function checkOverlap(
 
 export async function createBooking(data: BookingData): Promise<Booking> {
   const { tables, databaseId } = createAdminClient()
-  const row = await tables.createRow(databaseId, TABLES.bookings, ID.unique(), {
+  const row = await tables.createRow<BookingRow>(databaseId, TABLES.bookings, ID.unique(), {
     room_id: data.room_id,
     room_name: data.room_name,
     guest_name: data.guest_name,
@@ -92,7 +95,7 @@ export async function createBooking(data: BookingData): Promise<Booking> {
     discount_code: data.discount_code ?? null,
     notes: data.notes ?? null,
   })
-  return plain(row) as Booking
+  return plain(row)
 }
 
 export async function updateBooking(
@@ -100,8 +103,8 @@ export async function updateBooking(
   data: Partial<BookingData> & { payment_status?: PaymentStatus }
 ): Promise<Booking> {
   const { tables, databaseId } = createAdminClient()
-  const row = await tables.updateRow(databaseId, TABLES.bookings, id, data)
-  return plain(row) as Booking
+  const row = await tables.updateRow<BookingRow>(databaseId, TABLES.bookings, id, data)
+  return plain(row)
 }
 
 export async function cancelBooking(id: string): Promise<Booking> {
@@ -115,14 +118,14 @@ export async function getBookingsForCalendar(year: number, month: number): Promi
   const nextYear = month === 12 ? year + 1 : year
   const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`
 
-  const res = await tables.listRows(databaseId, TABLES.bookings, [
+  const res = await tables.listRows<BookingRow>(databaseId, TABLES.bookings, [
     Query.equal('payment_status', ['pending', 'partial', 'paid']),
     Query.lessThan('check_in', endDate),
     Query.greaterThan('check_out', startDate),
     Query.orderAsc('check_in'),
     Query.limit(500),
   ])
-  return plain(res.rows) as Booking[]
+  return plain(res.rows)
 }
 
 export async function getUpcomingBookings(days = 7): Promise<Booking[]> {
@@ -130,12 +133,12 @@ export async function getUpcomingBookings(days = 7): Promise<Booking[]> {
   const today = new Date().toISOString().split('T')[0]
   const future = new Date(Date.now() + days * 86400000).toISOString().split('T')[0]
 
-  const res = await tables.listRows(databaseId, TABLES.bookings, [
+  const res = await tables.listRows<BookingRow>(databaseId, TABLES.bookings, [
     Query.equal('payment_status', ['pending', 'partial', 'paid']),
     Query.greaterThanEqual('check_in', today),
     Query.lessThanEqual('check_in', future),
     Query.orderAsc('check_in'),
     Query.limit(20),
   ])
-  return plain(res.rows) as Booking[]
+  return plain(res.rows)
 }
